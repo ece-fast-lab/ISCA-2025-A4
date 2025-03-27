@@ -1,0 +1,16 @@
+# Ignore all files in results directory
+results/
+
+# Ignore all files in tmp directory
+tmp/
+
+
+app/cpu2017
+app/ffsb
+app/fastclick
+app/fio
+app/X-Mem
+app/YCSB
+
+tools/pcm
+tools/ddio-bench
