@@ -75,19 +75,46 @@ def main():
     ddio_off_configs = {k: v for k, v in data.items() if 'DCA OFF' in k}
     xmem_sol_configs = {k: v for k, v in data.items() if 'X-Mem Sol' in k}
     
-    # Sort configurations by XMem way allocation
-    def sort_by_xmem(configs):
-        return dict(sorted(configs.items(), key=lambda x: int(x[0].split('\n')[1], 16)))
+    # Define the desired xmem order
+    xmem_order = ['0x600', '0x0c0', '0x030', '0x003']
     
-    ddio_on_configs = sort_by_xmem(ddio_on_configs)
-    ddio_off_configs = sort_by_xmem(ddio_off_configs)
+    # Sort configurations by the specific xmem order
+    def sort_by_xmem_custom_order(configs):
+        # Create a mapping of xmem value to its position in the desired order
+        order_map = {v: i for i, v in enumerate(xmem_order)}
+        
+        # Sort the configs based on the desired order
+        result = {}
+        for xmem in xmem_order:
+            # Find all configs that match this xmem value
+            matching_configs = {k: v for k, v in configs.items() if k.split('\n')[1] == xmem}
+            # Add them to the result in the order they were found
+            result.update(matching_configs)
+        
+        # If there are any configs that don't match the predefined values, add them at the end
+        for k, v in configs.items():
+            if k.split('\n')[1] not in xmem_order:
+                result[k] = v
+                
+        return result
+    
+    # Apply the custom sorting
+    ddio_on_configs = sort_by_xmem_custom_order(ddio_on_configs)
+    ddio_off_configs = sort_by_xmem_custom_order(ddio_off_configs)
     
     # Combine all configurations in the desired order
     all_configs = list(ddio_on_configs.keys()) + list(ddio_off_configs.keys()) + list(xmem_sol_configs.keys())
     
     # Extract data for plotting
     xmem_miss_rates = [data[config]['Xmem L3 Miss Rate'] for config in all_configs]
-    tail_latencies = [data[config]['99% Tail Latency'] for config in all_configs]
+    tail_latencies = []
+    
+    # Only include latency values for non-X-Mem Sol configurations
+    for i, config in enumerate(all_configs):
+        if 'X-Mem Sol' in config:
+            tail_latencies.append(np.nan)  # Use NaN to hide the bar for X-Mem Sol
+        else:
+            tail_latencies.append(data[config]['99% Tail Latency'])
     
     # Create figure with dual y-axes
     fig, ax1 = plt.subplots(figsize=(12, 7))
@@ -100,7 +127,7 @@ def main():
     # Set colors based on DCA status
     bar_colors = ['blue' if 'DCA ON' in config else 'orange' if 'DCA OFF' in config else 'green' for config in all_configs]
     
-    # Plot bars for tail latency
+    # Plot bars for tail latency (NaN values will be skipped)
     bars = ax1.bar(bar_positions, tail_latencies, bar_width, alpha=0.7, 
                    color=bar_colors, label='99% Tail Latency')
     
@@ -112,6 +139,7 @@ def main():
     ax1.set_xlabel('Configuration')
     ax1.set_ylabel('99% Tail Latency (μs)')
     ax2.set_ylabel('X-Mem L3 Miss Rate (%)')
+    ax2.set_ylim(0,100)
     plt.title('Tail Latency and X-Mem L3 Miss Rate vs. Configuration')
     
     # Set x-ticks

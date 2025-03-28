@@ -23,4 +23,4 @@ export DPDK_PATH=$BASE_PATH/app/dpdk_microbench
 export PCM_PATH=$BASE_PATH/tools/pcm/build/bin
 export DBENCH_PATH=$BASE_PATH/tools/dca_control
 
-export ITER=1
+export ITER=5

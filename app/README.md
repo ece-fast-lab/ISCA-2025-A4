@@ -51,7 +51,7 @@ cd ../
 ```
 
 X-Mem internally designates the core affinity.
-We pre-compiled X-Mem with different core afiinities under `X-Mem/bin`. postfix c{i} indicates that the core affinity starts with ith core, where default is 0.
+We pre-compiled X-Mem with different core afiinities under `X-Mem_bin`. postfix c{i} indicates that the core affinity starts with ith core, where default is 0.
 Install them before you run the experiments
 
 ```bash
