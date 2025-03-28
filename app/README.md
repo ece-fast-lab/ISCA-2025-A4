@@ -7,6 +7,8 @@ This repository contains a collection of benchmarks for ISCA-2025-A4.
 ### configs/
 This directory contains benchmark configuration files for each application. These files define the parameters and settings used when running the benchmarks.
 
+Set the network PCIE port in `smartllc_lat.click` and `smartllc_nolat.click` properly. (match with the `$SERVER_NIC_PCIE` defined in `../scripts/utils/env.sh`)
+
 ## Installation
 
 The following instructions will guide you through installing all benchmarks and dependencies.
@@ -46,6 +48,15 @@ cd X-Mem
 ./build-linux.sh x64_avx 16
 sudo cp bin/xmem-linux-x64_avx /usr/local/bin/xmem
 cd ../
+```
+
+X-Mem internally designates the core affinity.
+We pre-compiled X-Mem with different core afiinities under `X-Mem/bin`. postfix c{i} indicates that the core affinity starts with ith core, where default is 0.
+Install them before you run the experiments
+
+```bash
+cd X-Mem_bin
+sudo mv * /usr/local/bin/
 ```
 
 ### Fastclick

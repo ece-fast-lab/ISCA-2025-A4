@@ -4,6 +4,7 @@ This document provides instructions for setting up the client machine for testin
 
 ## Prerequisites
 
+- Update `../scripts/utils/env.sh` to contain proper information.
 - Make sure environment variables are set up correctly by running:
   ```bash
   source ../scripts/utils/env.sh

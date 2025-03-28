@@ -1,8 +1,8 @@
 #!/bin/bash
 
 name=$1
-fio_path="/home/hnpark2/ddio/bench/fio"
-cd $fio_path
+
+cd $BASE_PATH"/app/fio"
 make clean
 ./configure
 make

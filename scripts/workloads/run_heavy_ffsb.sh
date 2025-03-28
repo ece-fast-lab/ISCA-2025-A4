@@ -1,7 +1,7 @@
 #! /bin/bash
 
 cpu_list=$1
-config="/home/hnpark2/bench/ffsb-workloads/configs/heavy_ffsb"
+config=$BASE_PATH"/app/configs/heavy_ffsb"
 
 # RAID option
 # #lsblk -f
@@ -14,7 +14,7 @@ sudo wipefs -a /dev/md127
 
 sudo mkfs.xfs -d agcount=512 -l size=512m /dev/md127
 sudo mount /dev/md127 /mnt/heavy_ffsb
-sudo taskset -c $cpu_list /home/hnpark2/bench/ffsb-workloads/ffsb/ffsb $config
+sudo taskset -c $cpu_list ffsb $config
 
 # noraid option
 # sudo umount /mnt/heavy_ffsb0
