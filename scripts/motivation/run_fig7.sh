@@ -48,7 +48,7 @@ for ((i=1; i<=$ITER; i++)); do
         mask=${llc_masks[$mask_i]}
 
         #start dpdk
-        sudo $DPDK_PATH/dpdk-rx -l $DPDK_CORE -a $network_device -- -d $lat -l 1000 -m 0 > $tmp_dpdk &
+        sudo $DPDK_PATH/dpdk-rx -l $DPDK_CORE -a $network_device -- -d $lat -l 10000 -m 0 > $tmp_dpdk &
         $BASE_PATH/scripts/workloads/start_client.sh $result_path $pkt_size &
         
         sleep 3

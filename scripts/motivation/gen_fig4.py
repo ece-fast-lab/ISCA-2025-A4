@@ -40,11 +40,23 @@ def parse_results(filepath):
         
         # Extract metrics
         xmem_miss_rate = np.mean([float(x) for x in re.findall(r'Xmem L3 Miss Rate\s+([\d.]+)', content)])
-        tail_latency = np.mean([float(x) for x in re.findall(r'99%_tail_latency\s+([\d.]+)', content)])
+        
+        # Fix the parsing for Average_latency
+        # The results file may have multiple columns of data per metric
+        avg_latency_line = re.search(r'Average_latency\s+(.*?)$', content, re.MULTILINE)
+        if avg_latency_line:
+            # Split the line and extract all numeric values
+            avg_latency_values = [float(x) for x in avg_latency_line.group(1).split() if re.match(r'^[\d.]+$', x)]
+            if avg_latency_values:
+                avg_latency = np.mean(avg_latency_values)
+            else:
+                avg_latency = 0
+        else:
+            avg_latency = 0
         
         data[combined_config] = {
             'Xmem L3 Miss Rate': xmem_miss_rate,
-            '99% Tail Latency': tail_latency,
+            'Average Latency': avg_latency,
             'Config': config  # Store the original config for reference
         }
     
@@ -107,14 +119,14 @@ def main():
     
     # Extract data for plotting
     xmem_miss_rates = [data[config]['Xmem L3 Miss Rate'] for config in all_configs]
-    tail_latencies = []
+    latencies = []
     
     # Only include latency values for non-X-Mem Sol configurations
     for i, config in enumerate(all_configs):
         if 'X-Mem Sol' in config:
-            tail_latencies.append(np.nan)  # Use NaN to hide the bar for X-Mem Sol
+            latencies.append(np.nan)  # Use NaN to hide the bar for X-Mem Sol
         else:
-            tail_latencies.append(data[config]['99% Tail Latency'])
+            latencies.append(data[config]['Average Latency'])
     
     # Create figure with dual y-axes
     fig, ax1 = plt.subplots(figsize=(12, 7))
@@ -127,9 +139,9 @@ def main():
     # Set colors based on DCA status
     bar_colors = ['blue' if 'DCA ON' in config else 'orange' if 'DCA OFF' in config else 'green' for config in all_configs]
     
-    # Plot bars for tail latency (NaN values will be skipped)
-    bars = ax1.bar(bar_positions, tail_latencies, bar_width, alpha=0.7, 
-                   color=bar_colors, label='99% Tail Latency')
+    # Plot bars for average latency (NaN values will be skipped)
+    bars = ax1.bar(bar_positions, latencies, bar_width, alpha=0.7, 
+                   color=bar_colors, label='Average Latency')
     
     # Plot line for XMem L3 miss rate on secondary y-axis
     line = ax2.plot(bar_positions, xmem_miss_rates, 'r-', marker='o', 
@@ -137,10 +149,10 @@ def main():
     
     # Set labels and title
     ax1.set_xlabel('Configuration')
-    ax1.set_ylabel('99% Tail Latency (μs)')
+    ax1.set_ylabel('Average Network Latency (μs)')
     ax2.set_ylabel('X-Mem L3 Miss Rate (%)')
     ax2.set_ylim(0,100)
-    plt.title('Tail Latency and X-Mem L3 Miss Rate vs. Configuration')
+    plt.title('Average Network Latency and X-Mem L3 Miss Rate vs. Configuration')
     
     # Set x-ticks
     plt.xticks(bar_positions, all_configs, rotation=45, ha='right')

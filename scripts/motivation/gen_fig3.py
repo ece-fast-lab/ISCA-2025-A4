@@ -109,8 +109,16 @@ def main():
     # Adjust layout
     plt.tight_layout()
     
-    # Save figure in the same folder as the results file - PNG only
-    output_path = os.path.join(results_path, 'fig3.png')
+    # Save figure with name based on directory
+    dir_name = os.path.basename(results_path)
+    if dir_name == "Fig3_dpdk-rx":
+        output_filename = "fig3a.png"
+    elif dir_name == "Fig3_nt-dpdk-rx":
+        output_filename = "fig3b.png"
+    else:
+        output_filename = "fig3.png"
+        
+    output_path = os.path.join(results_path, output_filename)
     plt.savefig(output_path, dpi=300)
     
     print(f"Figure saved to {output_path}")

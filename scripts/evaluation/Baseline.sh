@@ -13,45 +13,33 @@ dpdk_pkt=$3
 # Directories
 base="/home/hnpark2/ddio"
 
-dbench_path="/home/hnpark2/tool/ddio-bench"
-pcm_path="/home/hnpark2/tool/pcm/build/bin"
-fio_jobfile="/home/hnpark2/bench/fio/ddio_jobfile/smartllc.fio"
-heavy_jobfile="/home/hnpark2/bench/fio/ddio_jobfile/heavy.fio"
-light_jobfile="/home/hnpark2/bench/fio/ddio_jobfile/light.fio"
-dpdk_path="/home/hnpark2/bench/dpdk-framework/dpdk-rx"
-fc_path="/home/hnpark2/bench/fastclick"
+fio_jobfile=$BASE_PATH"/app/configs/smartllc.fio"
 
-tmp_mem="$base/tmp/mem.txt"
-tmp_io="$base/tmp/io.txt"
-tmp_dpdk="$base/tmp/dpdk.txt"
-tmp_pcie="$base/tmp/pcie.txt"
-rm $base/tmp/*.txt
+tmp_mem="$BASE_PATH/tmp/mem.txt"
+tmp_io="$BASE_PATH/tmp/io.txt"
+tmp_dpdk="$BASE_PATH/tmp/dpdk.txt"
+tmp_pcie="$BASE_PATH/tmp/pcie.txt"
+rm $BASE_PATH/tmp/*.txt
 
 
 
 # Variables
 # Import Workloads information (name, timeline, type, numcore, program command, ... etc)
-# source $base/scripts/workloads.sh
+# source $BASE_PATH/scripts/workloads.sh
 if [ "$bench_type" == "micro" ]; then
-    result_base="$base/results/"$run_type"_"$bench_type"/pkt"$dpdk_pkt"_bs"$st_bs
-    source $base/scripts/configs/workloads.sh
-    source $base/scripts/configs/parameters.sh
+    result_base="$BASE_PATH/results/"$run_type"_"$bench_type"/pkt"$dpdk_pkt"_bs"$st_bs
+    source $BASE_PATH/scripts/configs/workloads.sh
+    source $BASE_PATH/scripts/configs/parameters.sh
     export SIZE=$st_bs
-
 elif [ "$bench_type" == "real" ]; then
-    result_base="$base/results/"$run_type"_"$bench_type"/pkt"$dpdk_pkt"_bs"$st_bs
-    source $base/scripts/configs/workloads_real.sh
-    source $base/scripts/configs/parameters_real.sh
+    result_base="$BASE_PATH/results/"$run_type"_"$bench_type"/pkt"$dpdk_pkt"_bs"$st_bs
+    source $BASE_PATH/scripts/configs/workloads_real.sh
+    source $BASE_PATH/scripts/configs/parameters_real.sh
     bs_cf="SmartLLC_$st_bs"
 elif [ "$bench_type" == "real2" ]; then
-    result_base="$base/results/"$run_type"_"$bench_type"/pkt"$dpdk_pkt"_bs"$st_bs
-    source $base/scripts/configs/workloads_real2.sh
-    source $base/scripts/configs/parameters_real2.sh
-elif [ "$bench_type" == "test" ]; then
-    result_base="$base/results/"$run_type"_"$bench_type"/pkt"$dpdk_pkt"_bs"$st_bs
-    source $base/scripts/configs/workloads_test.sh
-    source $base/scripts/configs/parameters_test.sh
-    export SIZE=2048k
+    result_base="$BASE_PATH/results/"$run_type"_"$bench_type"/pkt"$dpdk_pkt"_bs"$st_bs
+    source $BASE_PATH/scripts/configs/workloads_real2.sh
+    source $BASE_PATH/scripts/configs/parameters_real2.sh
 fi
 
 mkdir -p $result_base
@@ -61,13 +49,10 @@ mkdir -p $result_base
 RAW_DATE=$(date '+%Y-%m-%d')
 RAW_TIME=$(date '+%H-%M-%S')
 
-# Init script
-# sudo $base/scripts/utils/init.sh > /dev/null
-
 # Start iteration 
 for ((iter=iter_num; iter<iter_num+1; iter++)); do
 
-    sudo $base/scripts/utils/kill_all.sh > /dev/null
+    $BASE_PATH/scripts/utils/kill_all.sh > /dev/null
     sudo rm /var/lib/redis/dump.rdb
 
     result_path="$result_base/$iter"
@@ -79,9 +64,9 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
     if [ "$bench_type" == "micro" ]; then
         # Microbenchmarks
         run_command=(   "" \
-                        #"sudo $dpdk_path/dpdk-rx -l ${cpu_list[1]} -a $network_device -- -d $dpdk_latency -l 10000 > $result_path/dpdk_output.txt &  $base/scripts/start_spr3.sh $result_path $dpdk_pkt &" \
+                        #"sudo $dpdk_path/dpdk-rx -l ${cpu_list[1]} -a $network_device -- -d $dpdk_latency -l 10000 > $result_path/dpdk_output.txt &  $BASE_PATH/scripts/start_spr3.sh $result_path $dpdk_pkt &" \
                         ""\
-                        "sudo -E taskset -c ${cpu_list[2]} $base/bench/fio/fio_lat $fio_jobfile &" \
+                        "sudo -E taskset -c ${cpu_list[2]} fio $fio_jobfile &" \
                         # ""\
                         # "sudo xmem_c11 -t -n300000 -r -R -c256 -j${num_core[3]} -w$xmem_large_ws &" \
                         # "sudo xmem_c14 -t -n300000 -r -R -c256 -j${num_core[4]} -w$xmem_large_ws &" \
@@ -92,54 +77,38 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
     elif [ "$bench_type" == "real" ]; then
         # Real Bench
         # app_name=(  "fastclick"     "ffsb"      "Redis-server"     "Redis"      "mcf"      "cactuBSSN"    "gcc"     "omnetpp"       "xalancbmk"     "parest")
-        run_command=(   #"sudo $fc_path/bin/click --dpdk -l ${cpu_list[0]} -a $network_device -- $fc_path/compute_config.click > $result_path/dpdk_output.txt &  $base/scripts/start_spr3.sh $result_path $dpdk_pkt &" \
+        run_command=(   #"sudo $fc_path/bin/click --dpdk -l ${cpu_list[0]} -a $network_device -- $fc_path/compute_config.click > $result_path/dpdk_output.txt &  $BASE_PATH/scripts/start_spr3.sh $result_path $dpdk_pkt &" \
                         ""\
-                        "sudo $base/scripts/workloads/run_ffsb.sh ${cpu_list[1]} $bs_cf &" \
-                        "sudo $base/scripts/workloads/run_redis_s.sh ${cpu_list[2]} &" \
-                        "sudo $base/scripts/workloads/run_YCSB.sh ${cpu_list[3]} $result_path $bench_type &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[4]} ${app_name[4]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[5]} ${app_name[5]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[6]} ${app_name[6]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[7]} ${app_name[7]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[8]} ${app_name[8]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[9]} ${app_name[9]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[10]} ${app_name[10]} run &"\
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[11]} ${app_name[11]} run &")
+                        "sudo -E $BASE_PATH/scripts/workloads/run_ffsb.sh ${cpu_list[1]} $bs_cf &" \
+                        "$BASE_PATH/scripts/workloads/run_redis_s.sh ${cpu_list[2]} &" \
+                        "$BASE_PATH/scripts/workloads/run_YCSB.sh ${cpu_list[3]} $result_path $bench_type &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[4]} ${app_name[4]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[5]} ${app_name[5]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[6]} ${app_name[6]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[7]} ${app_name[7]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[8]} ${app_name[8]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[9]} ${app_name[9]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[10]} ${app_name[10]} run &"\
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[11]} ${app_name[11]} run &")
     elif [ "$bench_type" == "real2" ]; then
         # Real Bench
         # app_name=(  "fastclick"     "ffsb"      "Redis-server"     "Redis"      "mcf"      "cactuBSSN"    "gcc"     "omnetpp"       "xalancbmk"     "parest")
-        run_command=(   #"sudo $fc_path/bin/click --dpdk -l ${cpu_list[0]} -a $network_device -- $fc_path/compute_config.click > $result_path/dpdk_output.txt &  $base/scripts/start_spr3.sh $result_path $dpdk_pkt &" \
+        run_command=(   #"sudo $fc_path/bin/click --dpdk -l ${cpu_list[0]} -a $network_device -- $fc_path/compute_config.click > $result_path/dpdk_output.txt &  $BASE_PATH/scripts/start_spr3.sh $result_path $dpdk_pkt &" \
                         ""\
                         # "sudo -E taskset -c ${cpu_list[1]} /home/hnpark2/bench/fio/fio_lat $heavy_jobfile &" \
                         # "sudo -E taskset -c ${cpu_list[2]} /home/hnpark2/bench/fio/fio_lat $light_jobfile &" \
-                        "sudo $base/scripts/workloads/run_heavy_ffsb.sh ${cpu_list[1]} &" \
-                        "sudo $base/scripts/workloads/run_light_ffsb.sh ${cpu_list[2]} &" \
-                        "sudo stdbuf -oL $base/scripts/workloads/run_redis_s.sh ${cpu_list[3]} &" \
-                        "sudo stdbuf -oL $base/scripts/workloads/run_YCSB.sh ${cpu_list[4]} $result_path $bench_type &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[5]} ${app_name[5]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[6]} ${app_name[6]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[7]} ${app_name[7]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[8]} ${app_name[8]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[9]} ${app_name[9]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[10]} ${app_name[10]} run &" \
-                        "sudo -u hnpark2 $base/scripts/workloads/run_spec.sh ${cpu_list[11]} ${app_name[11]} run &")
-    elif [ "$bench_type" == "test" ]; then
-        # Real Bench
-        # app_name=(  "fastclick"     "ffsb"      "Redis-server"     "Redis"      "mcf"      "cactuBSSN"    "gcc"     "omnetpp"       "xalancbmk"     "parest")
-        run_command=(   #"sudo $fc_path/bin/click --dpdk -l ${cpu_list[0]} -a $network_device -- $fc_path/compute_config.click > $result_path/dpdk_output.txt &  $base/scripts/start_spr3.sh $result_path $dpdk_pkt &" \
-                        ""\
-                        "sudo $base/scripts/workloads/run_heavy_ffsb.sh ${cpu_list[1]} &" \
-                        #"sudo -E taskset -c ${cpu_list[1]} /home/hnpark2/bench/fio/fio_lat /home/hnpark2/bench/fio/ddio_jobfile/smartllc.fio &" )
-                        "sudo $base/scripts/workloads/run_light_ffsb.sh ${cpu_list[2]} &" )
-        
-        sudo pqos -e llc:1=0x780 > /dev/null
-        sudo pqos -a llc:1=0-7 > /dev/null
+                        "sudo -E $BASE_PATH/scripts/workloads/run_heavy_ffsb.sh ${cpu_list[1]} &" \
+                        "sudo -E $BASE_PATH/scripts/workloads/run_light_ffsb.sh ${cpu_list[2]} &" \
+                        "stdbuf -oL $BASE_PATH/scripts/workloads/run_redis_s.sh ${cpu_list[3]} &" \
+                        "stdbuf -oL $BASE_PATH/scripts/workloads/run_YCSB.sh ${cpu_list[4]} $result_path $bench_type &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[5]} ${app_name[5]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[6]} ${app_name[6]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[7]} ${app_name[7]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[8]} ${app_name[8]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[9]} ${app_name[9]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[10]} ${app_name[10]} run &" \
+                        "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[11]} ${app_name[11]} run &")
     fi
-
-    # if [ "$run_type" == "DDIO-EN" ]; then
-    #     sudo /home/hnpark2/ddio/ddio-bench/storage_enable
-    # elif [ "$run_type" == "DDIO-DIS" ]; then
-    #     sudo /home/hnpark2/ddio/ddio-bench/storage_disable
     
     if [ "$run_type" == "Isolated" ]; then
         for ((i=0; i<8; i++)); do
@@ -151,25 +120,9 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
     fi
 
     
-    cd $pcm_path
+    cd $PCM_PATH
     core_num=17
 
-    # #Shorten Version
-    # for ((i=0; i<$num_application; i++)); do
-    #     eval ${run_command[$i]} > $result_path/${app_name[$i]}_log.txt
-    #     sleep 2
-    # done
-    # sleep 10
-    # sudo taskset -c 17 pcm 1 -silent | grep -A $(($core_num + 1)) "Core (SKT)" > $result_path/core_raw.txt &
-    # sudo taskset -c 17 ./pcm-iio 1.0 -silent | grep -A 62 "Socket0" > $result_path/io_thruput.txt &  
-    # sudo taskset -c 17 pcm-pcie 1.0 -e -silent | grep -A 3 "Skt" > $result_path/pcie_raw.txt &   
-    # sudo taskset -c 17 pcm-memory | grep "NODE 0 Mem " > $tmp_mem &
-    # for ((t=0; t<$elapsed_time; t++)); do
-    #     echo "[Runtime: "$t"]"
-    #     sleep $monitoring_time
-    # done
-
-    # Long Version
     for ((t=0; t<$runtime; t++)); do
         echo "[Runtime: "$t"]"
         new_app="False"
@@ -188,16 +141,12 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
             sudo stdbuf -oL taskset -c 17 stdbuf -oL  pcm  1 -silent | stdbuf -oL grep -A $(($core_num + 1)) "Core (SKT)" > $result_path/core_raw.txt 2>&1 &
             sudo stdbuf -oL taskset -c 17 stdbuf -oL  ./pcm-iio   1 -silent | stdbuf -oL grep -A 62 "Socket0" > $result_path/io_thruput.txt 2>&1 &  
             sudo stdbuf -oL taskset -c 17 stdbuf -oL  pcm-pcie 1 -e -silent  | stdbuf -oL grep -A 3 "Skt" > $result_path/pcie_raw.txt 2>&1 &   
-            sudo stdbuf -oL taskset -c 17 stdbuf -oL  pcm-memory  1 -silent | stdbuf -oL grep "NODE 0 Mem " > $tmp_mem 2>&1 &
+            sudo stdbuf -oL taskset -c 17 stdbuf -oL  pcm-memory  1 -silent | stdbuf -oL grep "SKT  0 Mem " > $tmp_mem 2>&1 &
         fi
         sleep $monitoring_time
     done
 
-    sudo pkill pcm 
-    sudo pkill pcm-iio 
-    sudo pkill pcm-pcie 
-    sudo pkill pcm-memory
-
+    sudo pkill pcm
 
     # start parsing
     sed '/Core/,+1d;/^$/d;/--/d;s/|//g;s/ K/000/g;s/ M/000000/g' $result_path/core_raw.txt > $result_path/core.txt
@@ -206,7 +155,7 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
     awk -v ln="$line" -v cn="$core_num" '{if(NR <= int(ln/cn)*cn) print $0}' $result_path/tmp.txt > $result_path/core.txt
     sed -i '/Skt/d;/--/d;s/ K/000/g;s/ M/000000/g;s/ G/000000000/g' $result_path/pcie_raw.txt 
     # get L2 hit / miss L3 hit / miss of running cores
-    awk '{print $1"  "$10"  "$8"  "$9"  "$7"  "$4}' $result_path/core.txt > $result_path/cache_stat.txt
+    awk '{print $2"  "$10"  "$8"  "$9"  "$7"  "$5}' $result_path/core.txt > $result_path/cache_stat.txt
     awk 'BEGIN{sl2h=0; sl2m=0; sl3h; sl3m; cnt=0;} {
     sl2h+=$2/1000; sl2m+=$3/1000; sl3h+=$4/1000; sl3m+=$5/1000; cnt++; 
     } END{print "Average_per_core_L2_HIT(K): " sl2h/cnt;  print "Average_per_core_L2_MISS(K): " sl2m/cnt;
@@ -219,7 +168,7 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
     print "PCIe_Miss_Rate(%): " (spm/(spm+sph))*100;}' $result_path/pcie.txt >> $result_path/result.txt
 
     # get IPC of running cores
-    awk '{print $1"   "$4}' $result_path/core.txt > $result_path/IPC.txt
+    awk '{print $2"   "$5}' $result_path/core.txt > $result_path/IPC.txt
     echo -n "Average_IPC: " >> $result_path/result.txt
     awk 'BEGIN{sum=0; cnt=0;} {sum+=$2; cnt++;} END{print sum/cnt}' $result_path/IPC.txt >> $result_path/result.txt
     
@@ -303,27 +252,27 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
     cat $tmp_mem | grep "Read" | awk 'BEGIN{ sum=0; cnt=0;} {sum += $8/1024; cnt++;} END {print "Mem_read(GB/s): "sum / cnt;}' >> $result_base/result_"$iter".txt
     cat $tmp_mem | grep "Write" | awk 'BEGIN{ sum=0; cnt=0;} {sum += $7/1024; cnt++;} END {print "Mem_write(GB/s): "sum / cnt;}' >> $result_base/result_"$iter".txt
 
-    cat $base/results/tx_result.txt | grep "Average_e2e_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
+    cat $BASE_PATH/results/tx_result.txt | grep "Average_e2e_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{print "Average_e2e_latency: "sum/cnt;}' >> $result_base/result_"$iter".txt
-    cat $base/results/tx_result.txt | grep "Average_remote_mem_access_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
+    cat $BASE_PATH/results/tx_result.txt | grep "Average_remote_mem_access_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{print "Average_remote_mem_access_latency: "sum/cnt;}' >> $result_base/result_"$iter".txt
-    cat $base/results/tx_result.txt | grep "Average_remote_compute_access_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
+    cat $BASE_PATH/results/tx_result.txt | grep "Average_remote_compute_access_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{print "Average_remote_compute_access_latency: "sum/cnt;}' >> $result_base/result_"$iter".txt
-    cat $base/results/tx_result.txt | grep "Average_remote_nic-host_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
+    cat $BASE_PATH/results/tx_result.txt | grep "Average_remote_nic-host_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{print "Average_remote_nic-host_latency: "sum/cnt;}' >> $result_base/result_"$iter".txt
 
 
-    cat $base/results/tx_result.txt | grep "99%_e2e_tail_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
+    cat $BASE_PATH/results/tx_result.txt | grep "99%_e2e_tail_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{print "99%_e2e_tail_latency: "sum/cnt;}' >> $result_base/result_"$iter".txt
-    cat $base/results/tx_result.txt | grep "99%_remote_mem_access_tail_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
+    cat $BASE_PATH/results/tx_result.txt | grep "99%_remote_mem_access_tail_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{print "99%_remote_mem_access_tail_latency: "sum/cnt;}' >> $result_base/result_"$iter".txt
-    cat $base/results/tx_result.txt | grep "99%_remote_compute_tail_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
+    cat $BASE_PATH/results/tx_result.txt | grep "99%_remote_compute_tail_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{print "99%_remote_compute_tail_latency: "sum/cnt;}' >> $result_base/result_"$iter".txt
-    cat $base/results/tx_result.txt | grep "99%_remote_nic-host_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
+    cat $BASE_PATH/results/tx_result.txt | grep "99%_remote_nic-host_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{print "99%_remote_nic-host_latency: "sum/cnt;}' >> $result_base/result_"$iter".txt
 
 
-    sudo $base/scripts/utils/kill_all.sh > /dev/null  
+    sudo $BASE_PATH/scripts/utils/kill_all.sh > /dev/null  
 
     if [ "$bench_type" == "real" ]; then
         sleep 5

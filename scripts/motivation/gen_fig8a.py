@@ -17,8 +17,8 @@ def parse_results(filepath):
         config = section[0]
         content = section[1]
         
-        # Only look at ddio0 and ddio2 configs
-        if 'ddio1' in config:
+        # Only look at ddio1 and ddio2 configs
+        if 'ddio0' in config:
             continue
             
         # Extract block size and DCA status
@@ -73,7 +73,7 @@ def main():
     # Parse data
     data = parse_results(results_file)
     
-    # Define block size order - limit to 16k through 512k
+    # Define block size order
     block_sizes = ['16k', '32k', '64k', '128k', '256k', '512k']
     
     # Extract data for plotting
@@ -130,13 +130,13 @@ def main():
     ax1.errorbar(x + width/2, dca_stg_off_latency, yerr=[np.zeros_like(dca_stg_off_tail), dca_stg_off_tail], 
                 fmt='none', ecolor='darkblue', capsize=5)
     
-    # Create separate data for storage throughput
-    # Since we don't have dpdk_solo in our filtered list anymore, we can use all indices
-    x_filtered = x
-    dca_both_on_throughput_filtered = dca_both_on_throughput
-    dca_stg_off_throughput_filtered = dca_stg_off_throughput
+    # Create separate data for storage throughput (excluding dpdk_solo positions)
+    non_solo_indices = [i for i, bs in enumerate(block_sizes) if bs != 'dpdk_solo']
+    x_filtered = [x[i] for i in non_solo_indices]
+    dca_both_on_throughput_filtered = [dca_both_on_throughput[i] for i in non_solo_indices]
+    dca_stg_off_throughput_filtered = [dca_stg_off_throughput[i] for i in non_solo_indices]
     
-    # Plot lines for storage throughput
+    # Plot lines for storage throughput (only for non-dpdk_solo points)
     line1 = ax2.plot(x_filtered, dca_both_on_throughput_filtered, 'r-', linewidth=2, marker='o', 
                     label='DCA Both ON Storage Throughput')
     line2 = ax2.plot(x_filtered, dca_stg_off_throughput_filtered, 'b-', linewidth=2, marker='s', 

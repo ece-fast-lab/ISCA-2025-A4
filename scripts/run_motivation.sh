@@ -24,9 +24,11 @@ run_fig3() {
     echo "Running Figure 3..."
     $base/run_fig3.sh dpdk-rx
     python3 $base/gen_fig3.py $BASE_PATH/results/Fig3_dpdk-rx
+    sleep 3
     $base/run_fig3.sh nt-dpdk-rx
     python3 $base/gen_fig3.py $BASE_PATH/results/Fig3_nt-dpdk-rx
     sleep 3
+    cp $BASE_PATH/results/Fig3*/fig*.png $BASE_PATH/results/figs/
 }
 
 run_fig4() {
@@ -34,6 +36,7 @@ run_fig4() {
     $base/run_fig4.sh
     python3 $base/gen_fig4.py $BASE_PATH/results/Fig4
     sleep 3
+    cp $BASE_PATH/results/Fig4/fig*.png $BASE_PATH/results/figs/
 }
 
 run_fig5() {
@@ -41,14 +44,15 @@ run_fig5() {
     $base/run_fig5.sh
     python3 $base/gen_fig5.py $BASE_PATH/results/Fig5
     sleep 3
+    cp $BASE_PATH/results/Fig5/fig*.png $BASE_PATH/results/figs/
 }
 
-run_fig68a() {
-    echo "Running Figure 6 and 8a..."
-    $base/run_fig68a.sh
+run_fig6() {
+    echo "Running Figure 6..."
+    $base/run_fig68a.sh Fig6
     python3 $base/gen_fig6.py $BASE_PATH/results/Fig6
-    python3 $base/gen_fig8a.py $BASE_PATH/results/Fig8a
     sleep 3
+    cp $BASE_PATH/results/Fig6/fig*.png $BASE_PATH/results/figs/
 }
 
 run_fig7() {
@@ -56,6 +60,15 @@ run_fig7() {
     $base/run_fig7.sh
     python3 $base/gen_fig7.py $BASE_PATH/results/Fig7
     sleep 3
+    cp $BASE_PATH/results/Fig7/fig*.png $BASE_PATH/results/figs/
+}
+
+run_fig8a() {
+    echo "Running Figure 8a..."
+    $base/run_fig68a.sh Fig8a
+    python3 $base/gen_fig8a.py $BASE_PATH/results/Fig8a
+    sleep 3
+    cp $BASE_PATH/results/Fig8a/fig*.png $BASE_PATH/results/figs/
 }
 
 run_fig8b() {
@@ -63,41 +76,58 @@ run_fig8b() {
     $base/run_fig8b.sh
     python3 $base/gen_fig8b.py $BASE_PATH/results/Fig8b
     sleep 3
+    cp $BASE_PATH/results/Fig8b/fig*.png $BASE_PATH/results/figs/
 }
 
-# Check if a specific figure was requested
-if [ $# -eq 1 ]; then
-    figure_number=$1
+mkdir -p $BASE_PATH/results/figs
+
+# Check if any figure numbers were specified
+if [ $# -ge 1 ]; then
+    xmem_started=0
     
-    case $figure_number in
-        3)
-            start_xmem
-            run_fig3
-            stop_xmem
-            ;;
-        4)
-            start_xmem
-            run_fig4
-            stop_xmem
-            ;;
-        5)
-            run_fig5
-            ;;
-        6|8a)
-            run_fig68a
-            ;;
-        7|7b)
-            run_fig7
-            ;;
-        8b)
-            run_fig8b
-            ;;
-        *)
-            echo "Invalid figure number: $figure_number"
-            echo "Valid options: 3, 4, 5, 6, 7, 8a, 8b"
-            exit 1
-            ;;
-    esac
+    # Process each argument as a figure number
+    for figure_number in "$@"; do
+        case $figure_number in
+            3)
+                if [ $xmem_started -eq 0 ]; then
+                    start_xmem
+                    xmem_started=1
+                fi
+                run_fig3
+                ;;
+            4)
+                if [ $xmem_started -eq 0 ]; then
+                    start_xmem
+                    xmem_started=1
+                fi
+                run_fig4
+                ;;
+            5)
+                run_fig5
+                ;;
+            6)
+                run_fig6
+                ;;
+            7|7b)
+                run_fig7
+                ;;
+            8a)
+                run_fig8a
+                ;;
+            8b)
+                run_fig8b
+                ;;
+            *)
+                echo "Invalid figure number: $figure_number"
+                echo "Valid options: 3, 4, 5, 6, 7, 8a, 8b"
+                ;;
+        esac
+    done
+    
+    # Stop X-Mem if it was started
+    if [ $xmem_started -eq 1 ]; then
+        stop_xmem
+    fi
 else
     # Run all figures
     start_xmem
@@ -105,9 +135,12 @@ else
     run_fig4
     stop_xmem
     run_fig5
-    run_fig68a
+    run_fig6
     run_fig7
+    run_fig8a
     run_fig8b
 fi
+
+$base/stop_all.sh
 
 echo "Done!"

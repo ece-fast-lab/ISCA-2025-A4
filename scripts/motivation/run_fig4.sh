@@ -25,7 +25,7 @@ pkt_size="1024"
 type="dpdk-rx"
 
 # xmem_on_idx=2
-ddio_enable=("0" "0" "0" "0" "1" "1" "1" "1" "1")
+ddio_enable=("1" "1" "1" "1"  "0" "0" "0" "0" "1")
 xmem_ways=("0x600" "0x0c0" "0x030" "0x003" "0x600" "0x0c0" "0x030" "0x003" "0x003")
 
 # sudo pqos -R
@@ -45,7 +45,7 @@ for ((i=1; i<=$ITER; i++)); do
     # dpdk-tx started
     $BASE_PATH/scripts/workloads/start_client.sh $result_base $pkt_size &
     #start dpdk
-    sudo stdbuf -oL $DPDK_PATH/$type -l $DPDK_CORE -a $network_device -- -d $lat -l 1000 -m 0 > $tmp_dpdk &
+    sudo stdbuf -oL $DPDK_PATH/$type -l $DPDK_CORE -a $network_device -- -d $lat -l 10000 -m 0 > $tmp_dpdk &
     sleep 2
 
     for j in {0..8}; do

@@ -17,7 +17,7 @@ systemctl stop rshim
 
 #Stop default Redis server
 sudo systemctl stop redis
-sudo sysctl vm.overcommit_memory=0
+sudo sysctl vm.overcommit_memory=1
 
 # Set RAID for SSD
 sudo mdadm --create /dev/md127 --level=0 --raid-devices=4 /dev/nvme{0,1,2,3}n1

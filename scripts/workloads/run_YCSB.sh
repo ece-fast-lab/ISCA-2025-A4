@@ -17,11 +17,13 @@ while [ "$(redis-cli FLUSHALL)" != "OK" ]; do
     sleep 1
 done
 
+cd $YCSB_path
+
 echo "**************"
 echo "  LOAD PHASE"
 echo "**************"
 echo ""
-taskset --cpu-list $list $YCSB_path/bin/ycsb.sh load redis -s -P $BASE_PATH/app/configs/workload$WORKLOAD -p "redis.host=127.0.0.1" -p "redis.port=6379" \
+taskset --cpu-list $list ./bin/ycsb load redis -s -P $BASE_PATH/app/configs/workload$WORKLOAD -p "redis.host=127.0.0.1" -p "redis.port=6379" \
     -threads $THREADS > $OUTPUT_FOLDER/YCSB_load.txt
 
 echo ""
@@ -31,7 +33,7 @@ echo "*************"
 echo ""
 
 # actual YSCB client 
-taskset --cpu-list $list $YCSB_path/bin/ycsb.sh run redis -s -P $BASE_PATH/app/configs/workload$WORKLOAD \
+taskset --cpu-list $list ./bin/ycsb run redis -s -P $BASE_PATH/app/configs/workload$WORKLOAD \
     -p "redis.host=127.0.0.1" -p "redis.port=6379" \
     -threads $THREADS -target $TARGET > $OUTPUT_FOLDER/YCSB_Run.txt
 
