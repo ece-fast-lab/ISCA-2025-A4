@@ -6,7 +6,7 @@ bench_type=$1
 bs=$2
 pckt=$3
 
-result_base=#BASE_PATH"/results"
+result_base=$BASE_PATH"/results"
 
 types=( "Shared" "Isolated" "SmartLLC_1" "SmartLLC_2" "SmartLLC_3" "SmartLLC_0" )
 

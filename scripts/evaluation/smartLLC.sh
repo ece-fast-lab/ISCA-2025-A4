@@ -150,8 +150,8 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
                         # "sudo -E taskset -c ${cpu_list[2]} /home/hnpark2/bench/fio/fio_lat $light_jobfile &" \
                         "sudo -E $BASE_PATH/scripts/workloads/run_heavy_ffsb.sh ${cpu_list[1]} &" \
                         "sudo -E $BASE_PATH/scripts/workloads/run_light_ffsb.sh ${cpu_list[2]} &" \
-                        "sudo stdbuf -oL $BASE_PATH/scripts/workloads/run_redis_s.sh ${cpu_list[3]} &" \
-                        "sudo stdbuf -oL $BASE_PATH/scripts/workloads/run_YCSB.sh ${cpu_list[4]} $result_path $bench_type &" \
+                        "sudo -E sudo stdbuf -oL $BASE_PATH/scripts/workloads/run_redis_s.sh ${cpu_list[3]} &" \
+                        "sudo -E sudo stdbuf -oL $BASE_PATH/scripts/workloads/run_YCSB.sh ${cpu_list[4]} $result_path $bench_type &" \
                         "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[5]} ${app_name[5]} run &" \
                         "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[6]} ${app_name[6]} run &" \
                         "$BASE_PATH/scripts/workloads/run_spec.sh ${cpu_list[7]} ${app_name[7]} run &" \
@@ -1014,7 +1014,7 @@ for ((iter=iter_num; iter<iter_num+1; iter++)); do
     cat $BASE_PATH/results/tx_result.txt | grep "99%_remote_nic-host_latency" | tail -n $((monitoring_time * elapsed_time)) | awk 'BEGIN{sum=0; cnt=0;}{if(NR <10){sum+=$2; cnt++;}}
     END{ if(cnt > 0){ print "99%_remote_nic-host_latency: "sum/cnt;}}' >> $result_base/result_"$iter".txt
 
-    sudo $BASE_PATH/scripts/utils/kill_all.sh > /dev/null 
+    $BASE_PATH/scripts/utils/kill_all.sh > /dev/null 
 
 
     if [ "$bench_type" == "real" ]; then

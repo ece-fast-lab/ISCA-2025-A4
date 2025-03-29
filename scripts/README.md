@@ -5,14 +5,18 @@ This README provides instructions for running experiments, locating results, and
 ## Running Experiments
 
 ### Prerequisites
-- Ensure that all benchmarks are installed
-- The `BASE_PATH` environment variable must be set to the root directory of the project
+- Ensure that all benchmarks and tools are installed
+- Ensure all enviroment variables are defined properly
 - Appropriate permissions for PQOS and DPDK operations (sudo access)
 
 ### Running All Experiments
 To run all motivation experiments:
 ```bash
 ./run_motivation.sh
+```
+To run evaluation experiments:
+```bash
+./run_evaluation.sh
 ```
 
 ### Running Individual Experiments
@@ -49,14 +53,33 @@ Each directory contains:
 
 ## Expected Results
 
-### Fig 3
-DPDK-NT shows interference with X-Mem only when X-Mem's LLC ways are allocated overlaps with the leftmost two DCA ways (Fig 3a). However, the LLC hit rate of DPDK-NT is not affected by the allocation of X-Mem. DPDK-T shows interference with X-Mem on three distinct regions. The interference is shown as an increase in the LLC hit rate of both applications and memory bandwidth. However, the extent of interference might vary across the run largely due to inconsistent X-Mem performance.
+Since experiments are conducted on real hardware, results may vary due to several influencing factors. Specifically, X-Mem tends to exhibit inconsistent performance, which could result in trends not precisely matching those presented and necessitate repeated runs. **Intermidtently, X-Mem LLC miss rate results very low. Please rerun in this case.**
+
+Key takeaways from the figures are as follows. We also provide example figures under `ex_figs/`
+
+### Fig 3a
+X-Mem shows interference with DPDK-NT only when X-Mem's LLC ways are allocated overlaps with the leftmost two DCA ways. However, the LLC hit rate of DPDK-NT is only affected when X-Mem is allocated to 0x030, contending with DPDK-NT code.
+
+### Fig 3b
+DPDK-T shows interference with X-Mem on three distinct regions. However, the extent of interference might vary across the run largely due to inconsistent X-Mem performance.
 
 ### Fig 4
-The interference between DPDK-T and X-Mem is illustrated as an increase in network tail latency and X-Mem LLC miss rate. When DCA is on, interference is captured when X-Mem's LLC ways are allocated to any of the three regions (aligns with Fig 3b). When DCA is off, interference is not captured in any LLC ways, suggesting that the source of interference is the I/O data allocated to LLC.
+When DCA is on, interference is captured when X-Mem's LLC ways are allocated to any of the three regions (aligns with Fig 3b). When DCA is off, interference in inclusive ways(0x003) is not captured.
 
 ### Fig 5
-Two important characteristics of storage I/O-intensive applications that uses large block sizes and deep I/O depth stand out in this figure. First, storage I/O throughput is little affected by whether DCA is on or off. Second, the DMA leak (memory bandwidth consumption) is severe even when DCA is on.
+First, storage I/O throughput is little affected by whether DCA is on or off. Second, the DMA leak (memory bandwidth consumption) is severe even when DCA is on.
 
 ### Fig 6
 Co-running DPDK-T and FIO significantly increases network latency when DCA is on compared to DPDK-T solo run.
+
+### Fig 7
+Overlapping DPDK-T allocated LLC ways to inclusive ways are benefitial to DPDK-T. Memory bandwidth consumption and network latency reduces comparing (0x00c, 0x03c, 0x0fc) to (0x00f, 0x03f, 0x0ff), respectively.
+
+### Fig 8a
+When co-running DPDK-T and FIO, disabling storage I/O DCA reduces DCA contention, improving network latency while not affecting the storage I/O throughput noticably.
+
+### Fig 8b
+Reducing the FIO ways reduces DMA bloat. X-Mem LLC miss rate decrease while Storage I/O throughput remains.
+
+### HPW-heavy / LPW-heavy
+HPW performance increases by ~50%, without compromising that of LPWs. Systemwide performance is also improved.

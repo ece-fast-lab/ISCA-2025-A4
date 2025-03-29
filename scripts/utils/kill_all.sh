@@ -13,7 +13,7 @@ sudo $BASE_PATH/tools/dca_control/network_enable
 sudo pqos -R
 sudo wrmsr 0xc8b 0x0600
 
-sudo rm -r  $BASE_PATH/app/cpu2017/tmp/*
+sudo rm -r $BASE_PATH/app/cpu2017/tmp/*
 sudo rm -r $BASE_PATH/app/cpu2017/benchspec/CPU/*/run
 # perlbench_r mcf_r xalancbmk_r x264_r deepsjeng_r leela_r exchange2_r xz_r namd_r povray_r blender_r imagick_r nab_r roms_r
 sudo rm -r $BASE_PATH/app/cpu2017/result/*

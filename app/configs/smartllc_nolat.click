@@ -6,7 +6,7 @@ define($nfport 0000:17:00.0)
 fd0 :: FromDPDKDevice($nfport, PROMISC true, PAUSE none, MAXTHREADS 4, N_QUEUES 4, NUMA false, VERBOSE 99, NDESC 1024, BURST 64, RSS_AGGREGATE true) 
 -> c::AverageCounterMP()
 -> EtherMirror()
--> ModifyPayload(30, HI, 50) // It is used as ModifyPayload(offset, data, delay, mask, grow). Only need to modify the first three parameters. Delay is in ns-level.
+-> ModifyPayload(30, HI, 100) // It is used as ModifyPayload(offset, data, delay, mask, grow). Only need to modify the first three parameters. Delay is in ns-level.
 -> ToDPDKDevice($nfport, VERBOSE 99, TIMEOUT -1, BLOCKING false)
 
 /* if print every 1s */

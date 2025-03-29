@@ -7,7 +7,7 @@ network_device=$SERVER_NIC_PCIE
 storage_device=$SERVER_SSD_PCIE
 
 # Execution Time
-num_iteration=3
+num_iteration=$ITER
 runtime=30
 report_start_time=25
 report_end_time=$runtime

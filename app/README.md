@@ -77,4 +77,8 @@ Follow this redis installation guide on Lonux: https://redis.io/docs/latest/oper
 ### YCSB
 ```bash
 git clone https://github.com/brianfrankcooper/YCSB
+curl -O --location https://github.com/brianfrankcooper/YCSB/releases/download/0.17.0/ycsb-0.17.0.tar.gz
+tar xfvz ycsb-0.17.0.tar.gz
+cd ycsb-0.17.0
+mvn -pl site.ycsb:redis-binding -am clean package
 ```
