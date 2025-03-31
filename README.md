@@ -1,5 +1,7 @@
 # ISCA-2025-A4
 
+[![DOI](https://zenodo.org/badge/955433674.svg)](https://doi.org/10.5281/zenodo.15105163)
+
 ## Evaluation Flow
 
 ### Setup
