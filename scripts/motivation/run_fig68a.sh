@@ -1,6 +1,5 @@
 #!/bin/bash
 
-type=$1
 
 tmp_dpdk="$TMP_PATH/dpdk.txt"
 tmp_mem="$TMP_PATH/mem.txt"
@@ -10,7 +9,7 @@ tmp_io="$TMP_PATH/io.txt"
 
 fio_jobfile="$BASE_PATH/app/configs/dpdk_fio.fio"
 
-result_base="$BASE_PATH/results/$type"
+result_base="$BASE_PATH/results/Fig68a"
 mkdir -p $result_base
 
 
@@ -27,14 +26,7 @@ FIO_CORE="10-13"
 pkt_size="1024"
 dpdk_bin="dpdk-rx"
 
-# TODO: change to DPDK solo
-if [[ "$type" == "Fig6" ]]; then
-    # Fig 6
-    block_sizes=("0" "4k" "8k" "16k" "32k" "64k" "128k" "256k" "512k" "1024k" "2048k")
-elif [[ "$type" == "Fig8a" ]]; then
-    # Fig 8a
-    block_sizes=("16k" "32k" "64k" "128k" "256k" "512k")
-fi
+block_sizes=("0" "4k" "8k" "16k" "32k" "64k" "128k" "256k" "512k" "1024k" "2048k")
 
 sudo pqos -e llc:1=0x60
 sudo pqos -a llc:1=$DPDK_CORE
@@ -138,7 +130,7 @@ for ((i=1; i<=$ITER; i++)); do
 
 done
 
-$BASE_PATH/scripts/motivation/parse_result.sh $type
+$BASE_PATH/scripts/motivation/parse_result.sh Fig68a
 sudo $DBENCH_PATH/storage_enable
 sudo $DBENCH_PATH/network_enable
 sudo pqos -R

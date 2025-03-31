@@ -12,10 +12,12 @@ def parse_results(filepath):
     sections = re.findall(r'==========Monitoring Result \((.*?)\)==========(.*?)(?===========|\Z)', 
                          content, re.DOTALL)
     
+    print(f"Found {len(sections)} sections in the results file")
+    
     data = {}
     for section in sections:
         config = section[0]
-        content = section[1]
+        section_content = section[1].strip()
         
         # Only look at ddio0 and ddio1 configs
         if 'ddio2' in config:
@@ -33,22 +35,53 @@ def parse_results(filepath):
         
         dca_status = 'on' if 'ddio1' in config else 'off'
         
-        # Extract metrics
-        avg_latency_match = re.search(r'Average_latency\s+([\d.]+)', content)
-        tail_latency_match = re.search(r'99%_tail_latency\s+([\d.]+)', content)
-        storage_throughput_match = re.search(r'Storage1_Throughput_R\(GB/s\)\s+([\d.]+)', content)
+        # Process each line to extract metrics
+        avg_latency_values = []
+        tail_latency_values = []
+        storage_throughput_values = []
         
-        if avg_latency_match and tail_latency_match and storage_throughput_match:
-            avg_latency = float(avg_latency_match.group(1))
-            tail_latency = float(tail_latency_match.group(1))
-            storage_throughput = float(storage_throughput_match.group(1))
+        # Process each line in the section
+        for line in section_content.split('\n'):
+            if not line.strip():
+                continue
+                
+            # Split the line by tabs or multiple spaces
+            parts = re.split(r'\t+|\s{2,}', line.strip())
+            if len(parts) < 2:
+                continue
+                
+            field_name = parts[0].strip()
+            # Extract all numeric values from the line
+            values = []
+            for value_part in parts[1:]:
+                for val in value_part.strip().split():
+                    if re.match(r'^[\d.]+$', val):
+                        values.append(float(val))
             
+            if not values:
+                continue
+                
+            # Match with specific metrics we need
+            if field_name == "Average_latency":
+                avg_latency_values.extend(values)
+            elif field_name == "99%_tail_latency":
+                tail_latency_values.extend(values)
+            elif field_name == "Storage1_Throughput_R(GB/s)":
+                storage_throughput_values.extend(values)
+        
+        # Calculate averages if we have values
+        if avg_latency_values and tail_latency_values and storage_throughput_values:
             key = (block_size, dca_status)
             data[key] = {
-                'Average Latency': avg_latency,
-                '99% Tail Latency': tail_latency,
-                'Storage Throughput': storage_throughput
+                'Average Latency': np.mean(avg_latency_values),
+                '99% Tail Latency': np.mean(tail_latency_values),
+                'Storage Throughput': np.mean(storage_throughput_values)
             }
+        else:
+            print(f"Warning: Missing data for configuration {config}")
+            print(f"  Avg Latency: {len(avg_latency_values)} values")
+            print(f"  Tail Latency: {len(tail_latency_values)} values")
+            print(f"  Storage Throughput: {len(storage_throughput_values)} values")
     
     return data
 
@@ -111,7 +144,7 @@ def main():
     ax2 = ax1.twinx()
     
     # Set y-axis limits
-    ax1.set_ylim(0, 900)  # Main y-axis (Latency)
+    ax1.set_ylim(0, 1000)  # Main y-axis (Latency)
     ax2.set_ylim(0, 15)   # Secondary y-axis (Throughput)
     
     # Set positions for bars

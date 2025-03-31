@@ -19,32 +19,37 @@ def parse_results(filepath):
     data = {}
     for section in sections:
         config = section[0]
-        content = section[1]
+        content = section[1].strip()
         
-        # Extract metrics (taking average of the two columns)
-        # Modified to handle different spacing patterns in the file
-        avg_latency_values = re.findall(r'Average_latency\s+([\d.]+)', content)
-        tail_latency_values = re.findall(r'99%_tail_latency\s+([\d.]+)', content)
-        read_bw_values = re.findall(r'Average_read_BW\s+([\d.]+)', content)
-        write_bw_values = re.findall(r'Average_write_BW\s+([\d.]+)', content)
+        # Process each line in the section
+        metrics = {}
+        for line in content.split('\n'):
+            # Skip empty lines
+            if not line.strip():
+                continue
+                
+            # Split the line into field name and values
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+                
+            field_name = parts[0]
+            # Extract all numeric values (skip the field name)
+            values = [float(val) for val in parts[1:] if re.match(r'^[\d.]+$', val)]
+            
+            if values:
+                metrics[field_name] = np.mean(values)
         
-        if not all([avg_latency_values, tail_latency_values, read_bw_values, write_bw_values]):
-            print(f"Warning: Missing metric data for {config}")
-            continue
-        
-        # Calculate averages across all values found
-        avg_latency = np.mean([float(x) for x in avg_latency_values])
-        tail_latency = np.mean([float(x) for x in tail_latency_values])
-        read_bw = np.mean([float(x) for x in read_bw_values])
-        write_bw = np.mean([float(x) for x in write_bw_values])
-        
-        # Store in our data dictionary
-        data[config] = {
-            'Average Latency': avg_latency,
-            '99% Tail Latency': tail_latency,
-            'Read BW': read_bw / 1000,  # Convert to GB/s for better visualization
-            'Write BW': write_bw / 1000  # Convert to GB/s for better visualization
-        }
+        # Extract required metrics if they exist
+        if 'Average_latency' in metrics and '99%_tail_latency' in metrics and 'Average_read_BW' in metrics and 'Average_write_BW' in metrics:
+            data[config] = {
+                'Average Latency': metrics['Average_latency'],
+                '99% Tail Latency': metrics['99%_tail_latency'],
+                'Read BW': metrics['Average_read_BW'] / 1000,  # Convert to GB/s
+                'Write BW': metrics['Average_write_BW'] / 1000  # Convert to GB/s
+            }
+        else:
+            print(f"Warning: Missing required metrics for {config}")
     
     return data
 

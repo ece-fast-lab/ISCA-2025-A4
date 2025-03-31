@@ -18,7 +18,7 @@ rm $BASE_PATH/tmp/*.txt
 sudo modprobe msr
 
 network_device=$SERVER_NIC_PCIE
-lat=100
+lat=150
 DPDK_CORE="10-14"
 APP_CORE="0-3"
 pkt_size="1024"

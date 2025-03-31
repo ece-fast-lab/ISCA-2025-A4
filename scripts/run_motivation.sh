@@ -47,12 +47,13 @@ run_fig5() {
     cp $BASE_PATH/results/Fig5/fig*.png $BASE_PATH/results/figs/
 }
 
-run_fig6() {
+run_fig68a() {
     echo "Running Figure 6..."
-    $base/run_fig68a.sh Fig6
-    python3 $base/gen_fig6.py $BASE_PATH/results/Fig6
+    $base/run_fig68a.sh
+    python3 $base/gen_fig6.py $BASE_PATH/results/Fig68a
+    python3 $base/gen_fig8a.py $BASE_PATH/results/Fig68a
     sleep 3
-    cp $BASE_PATH/results/Fig6/fig*.png $BASE_PATH/results/figs/
+    cp $BASE_PATH/results/Fig68a/fig*.png $BASE_PATH/results/figs/
 }
 
 run_fig7() {
@@ -61,14 +62,6 @@ run_fig7() {
     python3 $base/gen_fig7.py $BASE_PATH/results/Fig7
     sleep 3
     cp $BASE_PATH/results/Fig7/fig*.png $BASE_PATH/results/figs/
-}
-
-run_fig8a() {
-    echo "Running Figure 8a..."
-    $base/run_fig68a.sh Fig8a
-    python3 $base/gen_fig8a.py $BASE_PATH/results/Fig8a
-    sleep 3
-    cp $BASE_PATH/results/Fig8a/fig*.png $BASE_PATH/results/figs/
 }
 
 run_fig8b() {
@@ -85,8 +78,17 @@ mkdir -p $BASE_PATH/results/figs
 if [ $# -ge 1 ]; then
     xmem_started=0
     
+    # Track which figures have been processed
+    declare -A processed_figures
+    
     # Process each argument as a figure number
     for figure_number in "$@"; do
+        # Skip if this figure has already been processed
+        if [ "${processed_figures[$figure_number]}" = "1" ]; then
+            echo "Figure $figure_number has already been processed, skipping..."
+            continue
+        fi
+        
         case $figure_number in
             3)
                 if [ $xmem_started -eq 0 ]; then
@@ -94,6 +96,7 @@ if [ $# -ge 1 ]; then
                     xmem_started=1
                 fi
                 run_fig3
+                processed_figures[3]=1
                 ;;
             4)
                 if [ $xmem_started -eq 0 ]; then
@@ -101,21 +104,25 @@ if [ $# -ge 1 ]; then
                     xmem_started=1
                 fi
                 run_fig4
+                processed_figures[4]=1
                 ;;
             5)
                 run_fig5
+                processed_figures[5]=1
                 ;;
-            6)
-                run_fig6
+            6|8a)
+                run_fig68a
+                processed_figures[6]=1
+                processed_figures[8a]=1
                 ;;
             7|7b)
                 run_fig7
-                ;;
-            8a)
-                run_fig8a
+                processed_figures[7]=1
+                processed_figures[7b]=1
                 ;;
             8b)
                 run_fig8b
+                processed_figures[8b]=1
                 ;;
             *)
                 echo "Invalid figure number: $figure_number"
@@ -135,9 +142,8 @@ else
     run_fig4
     stop_xmem
     run_fig5
-    run_fig6
+    run_fig68a
     run_fig7
-    run_fig8a
     run_fig8b
 fi
 

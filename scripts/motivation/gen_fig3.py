@@ -10,31 +10,63 @@ def parse_results(filepath):
         content = f.read()
     
     # Extract all monitoring sections
-    sections = re.findall(r'==========Monitoring Result \(0x([0-9A-F]+)\)==========(.*?)(?===========|\Z)', 
+    sections = re.findall(r'==========Monitoring Result \((0x[0-9A-Fa-f]+)\)==========(.*?)(?===========|\Z)', 
                          content, re.DOTALL)
+    
+    print(f"Found {len(sections)} sections in the results file")
     
     data = {}
     for section in sections:
-        config = '0x' + section[0]
-        content = section[1]
+        config = section[0]
+        section_content = section[1].strip()
         
-        # Extract metrics
-        dpdk_miss_rate = np.mean([float(x) for x in re.findall(r'DPDK L3 Miss Rate\s+([\d.]+)', content)])
-        xmem_miss_rate = np.mean([float(x) for x in re.findall(r'Xmem L3 Miss Rate\s+([\d.]+)', content)])
+        # Initialize metrics
+        dpdk_miss_rates = []
+        xmem_miss_rates = []
+        read_bws = []
+        write_bws = []
         
-        # Extract bandwidth data
-        read_bw_pattern = r'Average Read BW \(0x[0-9A-F]+\)\s+([\d.]+)'
-        read_bw = np.mean([float(x) for x in re.findall(read_bw_pattern, content)])
+        # Process each line in the section
+        for line in section_content.split('\n'):
+            if not line.strip():
+                continue
+            
+            parts = line.split('\t')
+            if len(parts) < 2:
+                continue
+                
+            field_name = parts[0].strip()
+            # Extract all numeric values, skipping any non-numeric text
+            values = []
+            for value_part in parts[1:]:
+                for val in value_part.strip().split():
+                    if re.match(r'^[\d.]+$', val):
+                        values.append(float(val))
+            
+            # Match field names with data
+            if field_name == "DPDK L3 Miss Rate":
+                dpdk_miss_rates.extend(values)
+            elif field_name == "Xmem L3 Miss Rate":
+                xmem_miss_rates.extend(values)
+            elif field_name.startswith("Average Read BW"):
+                read_bws.extend(values)
+            elif field_name.startswith("Average Write BW"):
+                write_bws.extend(values)
         
-        write_bw_pattern = r'Average Write BW \(0x[0-9A-F]+\)\s+([\d.]+)'
-        write_bw = np.mean([float(x) for x in re.findall(write_bw_pattern, content)])
-        
-        data[config] = {
-            'DPDK L3 Miss Rate': dpdk_miss_rate,
-            'Xmem L3 Miss Rate': xmem_miss_rate,
-            'Read BW': read_bw,
-            'Write BW': write_bw
-        }
+        # Calculate averages only if we found values
+        if dpdk_miss_rates and xmem_miss_rates and read_bws and write_bws:
+            data[config] = {
+                'DPDK L3 Miss Rate': np.mean(dpdk_miss_rates),
+                'Xmem L3 Miss Rate': np.mean(xmem_miss_rates),
+                'Read BW': np.mean(read_bws),
+                'Write BW': np.mean(write_bws)
+            }
+        else:
+            print(f"Warning: Missing data for configuration {config}")
+            print(f"  DPDK Miss Rate: {len(dpdk_miss_rates)} values found")
+            print(f"  Xmem Miss Rate: {len(xmem_miss_rates)} values found")
+            print(f"  Read BW: {len(read_bws)} values found")
+            print(f"  Write BW: {len(write_bws)} values found")
     
     return data
 
@@ -68,7 +100,7 @@ def main():
     write_bws = [data[config]['Write BW'] for config in configs]
     
     # Create figure with dual y-axes
-    fig, ax1 = plt.subplots(figsize=(10, 6))
+    fig, ax1 = plt.subplots(figsize=(15, 5))
     ax2 = ax1.twinx()
     
     # First plot the bars with some transparency
@@ -96,6 +128,7 @@ def main():
     ax1.set_ylabel('L3 Miss Rate (%)')
     ax1.set_ylim(0,100)
     ax2.set_ylabel('Memory Bandwidth (GB/s)')
+    ax2.set_ylim(0,30)
     plt.title('L3 Miss Rate and Memory Bandwidth vs. DDIO Configuration')
     
     # Set x-ticks

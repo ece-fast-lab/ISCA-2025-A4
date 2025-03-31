@@ -18,19 +18,51 @@ def parse_results(filepath):
     data = {}
     for section in sections:
         config = section[0]
-        content = section[1]
+        section_content = section[1].strip()
         
-        # Extract metrics
-        xmem_miss_rate_values = re.findall(r'Xmem_L3_Miss_Rate\s+([\d.]+)', content)
-        storage_throughput_r_values = re.findall(r'Storage1_Throughput_R\(GB/s\)\s+([\d.]+)', content)
+        # Initialize collections for metrics
+        xmem_miss_rates = []
+        storage_throughput_r_values = []
         
-        if not xmem_miss_rate_values or not storage_throughput_r_values:
-            print(f"Warning: Missing metric data for {config}")
-            continue
+        # Process each line in the section
+        for line in section_content.split('\n'):
+            if not line.strip():
+                continue
+                
+            # Split the line by tabs or multiple spaces
+            parts = re.split(r'\t+|\s{2,}', line.strip())
+            if len(parts) < 2:
+                continue
+                
+            field_name = parts[0].strip()
+            # Extract all numeric values from the line
+            values = []
+            for value_part in parts[1:]:
+                for val in value_part.strip().split():
+                    if re.match(r'^[\d.]+$', val):
+                        values.append(float(val))
+            
+            if not values:
+                continue
+                
+            # Match field names with appropriate collections
+            if field_name == "Xmem_L3_Miss_Rate":
+                xmem_miss_rates.extend(values)
+            elif field_name == "Storage1_Throughput_R(GB/s)":
+                storage_throughput_r_values.extend(values)
         
-        # Calculate averages across all values found
-        xmem_miss_rate = np.mean([float(x) for x in xmem_miss_rate_values])
-        storage_throughput_r = np.mean([float(x) for x in storage_throughput_r_values])
+        # Calculate averages if we found values
+        if xmem_miss_rates:
+            xmem_miss_rate = np.mean(xmem_miss_rates)
+        else:
+            print(f"Warning: No Xmem L3 Miss Rate found for {config}")
+            xmem_miss_rate = 0
+            
+        if storage_throughput_r_values:
+            storage_throughput_r = np.mean(storage_throughput_r_values)
+        else:
+            print(f"Warning: No Storage Throughput R found for {config}")
+            storage_throughput_r = 0
         
         # Store in our data dictionary
         data[config] = {

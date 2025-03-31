@@ -25,15 +25,39 @@ def parse_results(filepath):
         write_line = content[i*3 + 1]
         io_line = content[i*3 + 2]
         
-        # Extract values
-        read_values = re.findall(r'[\d.]+', read_line)
-        write_values = re.findall(r'[\d.]+', write_line)
-        io_values = re.findall(r'[\d.]+', io_line)
+        # Split the lines by tabs or multiple spaces to separate field name from values
+        read_parts = re.split(r'\t+|\s{2,}', read_line)
+        write_parts = re.split(r'\t+|\s{2,}', write_line)
+        io_parts = re.split(r'\t+|\s{2,}', io_line)
         
+        # Extract all values, skipping the field name
+        read_values = []
+        write_values = []
+        io_values = []
+        
+        # Process read line values
+        for part in read_parts[1:]:  # Skip field name
+            for val in part.strip().split():
+                if re.match(r'^[\d.]+$', val):
+                    read_values.append(float(val))
+        
+        # Process write line values
+        for part in write_parts[1:]:  # Skip field name
+            for val in part.strip().split():
+                if re.match(r'^[\d.]+$', val):
+                    write_values.append(float(val))
+        
+        # Process IO line values
+        for part in io_parts[1:]:  # Skip field name
+            for val in part.strip().split():
+                if re.match(r'^[\d.]+$', val):
+                    io_values.append(float(val))
+        
+        # Calculate averages
         dca_on_data[size] = {
-            'read_bw': float(read_values[1]),
-            'write_bw': float(write_values[1]),
-            'io_read': float(io_values[1])
+            'read_bw': np.mean(read_values) if read_values else 0,
+            'write_bw': np.mean(write_values) if write_values else 0,
+            'io_read': np.mean(io_values) if io_values else 0
         }
     
     # Parse DCA OFF data
@@ -43,15 +67,39 @@ def parse_results(filepath):
         write_line = content[(i+halfway)*3 + 1]
         io_line = content[(i+halfway)*3 + 2]
         
-        # Extract values
-        read_values = re.findall(r'[\d.]+', read_line)
-        write_values = re.findall(r'[\d.]+', write_line)
-        io_values = re.findall(r'[\d.]+', io_line)
+        # Split the lines by tabs or multiple spaces to separate field name from values
+        read_parts = re.split(r'\t+|\s{2,}', read_line)
+        write_parts = re.split(r'\t+|\s{2,}', write_line)
+        io_parts = re.split(r'\t+|\s{2,}', io_line)
         
+        # Extract all values, skipping the field name
+        read_values = []
+        write_values = []
+        io_values = []
+        
+        # Process read line values
+        for part in read_parts[1:]:  # Skip field name
+            for val in part.strip().split():
+                if re.match(r'^[\d.]+$', val):
+                    read_values.append(float(val))
+        
+        # Process write line values
+        for part in write_parts[1:]:  # Skip field name
+            for val in part.strip().split():
+                if re.match(r'^[\d.]+$', val):
+                    write_values.append(float(val))
+        
+        # Process IO line values
+        for part in io_parts[1:]:  # Skip field name
+            for val in part.strip().split():
+                if re.match(r'^[\d.]+$', val):
+                    io_values.append(float(val))
+        
+        # Calculate averages
         dca_off_data[size] = {
-            'read_bw': float(read_values[2]),  # Second column for DCA OFF
-            'write_bw': float(write_values[2]),
-            'io_read': float(io_values[2])
+            'read_bw': np.mean(read_values) if read_values else 0,
+            'write_bw': np.mean(write_values) if write_values else 0,
+            'io_read': np.mean(io_values) if io_values else 0
         }
     
     return block_sizes, dca_on_data, dca_off_data
