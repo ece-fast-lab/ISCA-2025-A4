@@ -14,13 +14,14 @@ def parse_result_file(file_path):
     with open(file_path, 'r') as f:
         content = f.read()
     
-    # Split into configuration sections
+    # Split content by configuration sections
     for config in configurations:
         # Fix the syntax error by separating the string construction
         joined_configs = "|".join(configurations)
-        pattern = f"{config}(.*?)(?={joined_configs}|$)"
+        pattern = f"{config}(.*?)(?=(?:{joined_configs})|$)"
         match = re.search(pattern, content, re.DOTALL)
         if not match:
+            print(f"Configuration {config} not found in file")
             continue
         
         config_data = match.group(1)
@@ -30,49 +31,22 @@ def parse_result_file(file_path):
             values = []
             for line in config_data.splitlines():
                 if re.match(f"^{pattern}", line):
-                    # Extract values after the colon
-                    parts = line.split(':', 1)
+                    # Extract values after the pattern
+                    parts = line.split(':', 1) if ':' in line else line.split(pattern, 1)
                     if len(parts) > 1:
                         # Process all numbers on the line
-                        nums = [float(x) for x in parts[1].strip().split() if x.strip()]
+                        nums = [float(x) for x in parts[1].strip().split() if x.strip() and re.match(r'^[\d.]+$', x)]
                         values.extend(nums)
             return np.mean(values) if values else 0
         
-        # Extract FFSB latency breakdown
-        latency_read_vals = []
-        latency_regex_vals = []
-        latency_write_vals = []
-        for line in config_data.splitlines():
-            if "Average_latency_breakdown(read)" in line:
-                parts = line.split(':', 1)
-                if len(parts) > 1:
-                    vals = [float(x) for x in parts[1].strip().split() if x.strip()]
-                    latency_read_vals.extend(vals)
-            elif "Average_latency_breakdown(regex)" in line:
-                parts = line.split(':', 1)
-                if len(parts) > 1:
-                    vals = [float(x) for x in parts[1].strip().split() if x.strip()]
-                    latency_regex_vals.extend(vals)
-            elif "Average_latency_breakdown(write)" in line:
-                parts = line.split(':', 1)
-                if len(parts) > 1:
-                    vals = [float(x) for x in parts[1].strip().split() if x.strip()]
-                    latency_write_vals.extend(vals)
-        
-        # Calculate mean values for latency (divide by 1000 to convert to ms)
-        heavy_read = latency_read_vals[0] / 1000 if latency_read_vals else 0
-        heavy_regex = latency_regex_vals[0] / 1000 if latency_regex_vals else 0
-        heavy_write = latency_write_vals[0] / 1000 if latency_write_vals else 0
-        
-        light_read = latency_read_vals[1] / 1000 if len(latency_read_vals) > 1 else 0
-        light_regex = latency_regex_vals[1] / 1000 if len(latency_regex_vals) > 1 else 0
-        light_write = latency_write_vals[1] / 1000 if len(latency_write_vals) > 1 else 0
+        # Extract latency breakdown values - cumulate all values
+        latency_read = extract_mean(r'Average_latency_breakdown\(read\)')
+        latency_regex = extract_mean(r'Average_latency_breakdown\(regex\)')
+        latency_write = extract_mean(r'Average_latency_breakdown\(write\)')
         
         # Extract I/O throughput
         storage_read = extract_mean(r'Storage_Throughput_R')
         storage_write = extract_mean(r'Storage_Throughput_W')
-        storage2_read = extract_mean(r'Storage2_Throughput_R')
-        storage2_write = extract_mean(r'Storage2_Throughput_W')
         network_read = extract_mean(r'Network_Throughput_R')
         network_write = extract_mean(r'Network_Throughput_W')
         
@@ -82,19 +56,14 @@ def parse_result_file(file_path):
         
         # Store data in dictionary
         data[config] = {
-            # FFSB latency
-            'heavy_read': heavy_read,
-            'heavy_regex': heavy_regex,
-            'heavy_write': heavy_write,
-            'light_read': light_read,
-            'light_regex': light_regex,
-            'light_write': light_write,
+            # Latency breakdown - divide by 1000 to convert to ms
+            'read_latency': latency_read / 1000,
+            'regex_latency': latency_regex / 1000,
+            'write_latency': latency_write / 1000,
             
             # I/O throughput
             'storage_read': storage_read,
             'storage_write': storage_write,
-            'storage2_read': storage2_read,
-            'storage2_write': storage2_write,
             'network_read': network_read,
             'network_write': network_write,
             
@@ -126,7 +95,7 @@ def create_stacked_bar(ax, data, configs, metrics, title, ylabel, colors=None, l
         bars = ax.bar(configs, values, width, bottom=bottoms, label=metric, color=colors[i % len(colors)])
         bottoms += values
         handles.append(bars)
-        labels.append(metric.replace('_', ' ').replace('heavy', 'Heavy').replace('light', 'Light'))
+        labels.append(metric.replace('_', ' ').title())
     
     # Set title and labels
     ax.set_title(title)
@@ -186,11 +155,11 @@ def main():
     configs = ["Shared", "Isolated", "SmartLLC_1", "SmartLLC_2", "SmartLLC_3", "SmartLLC_0"]
     
     # Create figure with 3 subplots
-    fig, axes = plt.subplots(3, 1, figsize=(12, 18), constrained_layout=True)
+    fig, axes = plt.subplots(3, 1, figsize=(10, 18), constrained_layout=True)
     
-    # 1. FFSB latency breakdown
-    ffsb_metrics = ['heavy_read', 'heavy_regex', 'heavy_write', 'light_read', 'light_regex', 'light_write']
-    ffsb_colors = ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072', '#80b1d3', '#fdb462']
+    # 1. FFSB latency breakdown - all values cumulated
+    ffsb_metrics = ['read_latency', 'regex_latency', 'write_latency']
+    ffsb_colors = ['#8dd3c7', '#ffffb3', '#bebada']
     create_stacked_bar(
         axes[0], data, configs, ffsb_metrics,
         'FFSB Latency Breakdown', 'Latency (ms)',
@@ -198,8 +167,8 @@ def main():
     )
     
     # 2. I/O throughput
-    io_metrics = ['storage_read', 'storage_write', 'storage2_read', 'storage2_write', 'network_read', 'network_write']
-    io_colors = ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3', '#a6d854', '#ffd92f']
+    io_metrics = ['storage_read', 'storage_write', 'network_read', 'network_write']
+    io_colors = ['#66c2a5', '#fc8d62', '#8da0cb', '#e78ac3']
     create_stacked_bar(
         axes[1], data, configs, io_metrics,
         'I/O Throughput', 'Throughput (GB/s)',

@@ -16,9 +16,9 @@ if [ "$1" == "" ] || [ "$1" == "real" ]; then
     sudo rm -r $BASE_PATH/results/HPW_heavy/*
     mv $BASE_PATH/results/*real* $BASE_PATH/results/HPW_heavy/
 
-    python3 gen_fig13a.py $BASE_PATH/results/HPW_heavy
+    python3 $base/gen_fig13a.py $BASE_PATH/results/HPW_heavy
     cp $BASE_PATH/results/HPW_heavy/fig*.png $BASE_PATH/results/figs/
-    python3 gen_fig14.py $BASE_PATH/results/HPW_heavy
+    python3 $base/gen_fig14.py $BASE_PATH/results/HPW_heavy
     cp $BASE_PATH/results/HPW_heavy/fig*.png $BASE_PATH/results/figs/
 fi
 
@@ -31,6 +31,6 @@ if [ "$1" == "" ] || [ "$1" == "real2" ]; then
     sudo rm -r $BASE_PATH/results/LPW_heavy/*
     mv $BASE_PATH/results/*real* $BASE_PATH/results/LPW_heavy/
 
-    python3 gen_fig13b.py $BASE_PATH/results/LPW_heavy
+    python3 $base/gen_fig13b.py $BASE_PATH/results/LPW_heavy
     cp $BASE_PATH/results/LPW_heavy/fig*.png $BASE_PATH/results/figs/
 fi

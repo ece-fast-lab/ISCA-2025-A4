@@ -1,4 +1,4 @@
-recordcount=10000
+recordcount=1000
 operationcount=10000000
 hdrhistogram.percentiles=50,75,90,95,99,99.9,99.99
 
@@ -6,15 +6,15 @@ workload=site.ycsb.workloads.CoreWorkload
 
 readallfields=true
 
-# The number of fields in a record
-fieldcount=10
+# The number o fields in a record
+fieldcount=1000
 
 # The size of each field (in bytes)
-fieldlength=100000
+fieldlength=10000
 
-readproportion=0
-updateproportion=1
+readproportion=1
+updateproportion=0
 scanproportion=0
 insertproportion=0
 
-requestdistribution=zipfian
+requestdistribution=uniform

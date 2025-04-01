@@ -98,7 +98,7 @@ elif [ "$bench_type" == "real2" ]; then
     pkts=("1024")
     bss=("2048k")       # just a dummy number
 
-    sudo click --dpdk -l ${cpu_list[0]} -a $network_device -- $BASE_PATH/app/configs/smartllc_nolat.click > $result_path/dpdk_output.txt &  
+    sudo click --dpdk -l ${cpu_list[0]} -a $network_device -- $BASE_PATH/app/configs/smartllc_real2.click > $result_path/dpdk_output.txt &  
     $SCRIPT_PATH/workloads/start_client.sh $result_path ${pkts[0]} &
 
     for ((i=0; i<${#pkts[@]}; i++)); do
