@@ -84,5 +84,6 @@ mvn -pl site.ycsb:redis-binding -am clean package
 ```
 
 ### SPEC 2017
-Install SPEC CPU 2017 bench under this directory.
+Install SPEC CPU 2017 bench under this directory (`app/cpu2017`).
+
 Follow this official guide: https://www.spec.org/cpu2017/Docs/quick-start.html
