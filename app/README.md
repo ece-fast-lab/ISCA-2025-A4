@@ -82,3 +82,7 @@ tar xfvz ycsb-0.17.0.tar.gz
 cd ycsb-0.17.0
 mvn -pl site.ycsb:redis-binding -am clean package
 ```
+
+### SPEC 2017
+Install SPEC CPU 2017 bench under this directory.
+Follow this official guide: https://www.spec.org/cpu2017/Docs/quick-start.html
