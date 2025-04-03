@@ -72,7 +72,7 @@ cd ../
 ```
 
 ### Redis
-Follow this redis installation guide on Lonux: https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-on-linux/
+Follow this redis installation guide on Lonux: https:[//redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-on-linux/](https://redis.io/docs/latest/operate/oss_and_stack/install/install-redis/install-redis-from-source/)
 
 ### YCSB
 ```bash
