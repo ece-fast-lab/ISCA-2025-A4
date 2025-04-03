@@ -9,7 +9,7 @@ mkdir -p $BASE_PATH/results/figs
 
 # HPW heavy scenario
 if [ "$1" == "" ] || [ "$1" == "real" ]; then
-    sudo $BASE_PATH/scripts/utils/switch.sh real
+    #sudo $BASE_PATH/scripts/utils/switch.sh real
     $base/run_all.sh real
 
     mkdir -p $BASE_PATH/results/HPW_heavy
@@ -33,4 +33,7 @@ if [ "$1" == "" ] || [ "$1" == "real2" ]; then
 
     python3 $base/gen_fig13b.py $BASE_PATH/results/LPW_heavy
     cp $BASE_PATH/results/LPW_heavy/fig*.png $BASE_PATH/results/figs/
+    
+    # revert to original configuration
+    sudo $BASE_PATH/scripts/utils/switch.sh real
 fi
