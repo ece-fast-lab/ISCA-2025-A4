@@ -80,6 +80,7 @@ git clone https://github.com/brianfrankcooper/YCSB
 cd YCSB
 mvn -pl site.ycsb:redis-binding -am clean package
 ```
+YCSB should be located under this directory (`app/YCSB`)
 
 ### SPEC 2017
 Install SPEC CPU 2017 bench under this directory (`app/cpu2017`).
