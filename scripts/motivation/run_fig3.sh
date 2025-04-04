@@ -10,7 +10,7 @@ tmp_pcie="$TMP_PATH/pcie.txt"
 tmp_io="$TMP_PATH/io.txt"
 tmp_miss="$TMP_PATH/miss.txt"
 
-dpdk_path="$BASE_PATH/app/dpdk_microbench/"
+dpdk_path="$BASE_PATH/app/dpdk_microbench"
 pcm_path="$BASE_PATH/tools/pcm/build/bin"
 
 result_base="$BASE_PATH/results/Fig3_$type"
