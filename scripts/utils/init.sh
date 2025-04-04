@@ -20,7 +20,10 @@ sudo systemctl stop redis
 sudo sysctl vm.overcommit_memory=1
 
 # Set RAID for SSD
-sudo umount /mnt/*ffsb*
+sudo umount /mnt/heavy_ffsb
+sudo umount /mnt/light_ffsb
+sudo umount /mnt/ffsb_test
+
 sudo wipefs -a /dev/md127
 sudo mdadm --stop /dev/md127
 sudo mdadm --zero-superblock /dev/nvme{0,1,2,3}n1
