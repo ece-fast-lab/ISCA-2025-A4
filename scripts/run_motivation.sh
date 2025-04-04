@@ -73,6 +73,7 @@ run_fig8b() {
 }
 
 mkdir -p $BASE_PATH/results/figs
+mkdir -p $BASE_PATH/tmp
 stop_xmem
 
 # Check if any figure numbers were specified
