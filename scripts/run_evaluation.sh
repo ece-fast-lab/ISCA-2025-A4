@@ -10,7 +10,7 @@ mkdir -p $BASE_PATH/tmp
 
 # HPW heavy scenario
 if [ "$1" == "" ] || [ "$1" == "real" ]; then
-    #sudo $BASE_PATH/scripts/utils/switch.sh real
+    sudo $BASE_PATH/scripts/utils/switch.sh real
     $base/run_all.sh real
 
     mkdir -p $BASE_PATH/results/HPW_heavy
