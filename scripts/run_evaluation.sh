@@ -6,6 +6,7 @@ base=$BASE_PATH"/scripts/evaluation"
 $BASE_PATH/scripts/utils/kill_all.sh
 $BASE_PATH/scripts/workloads/end_client.sh
 mkdir -p $BASE_PATH/results/figs
+mkdir -p $BASE_PATH/tmp
 
 # HPW heavy scenario
 if [ "$1" == "" ] || [ "$1" == "real" ]; then
