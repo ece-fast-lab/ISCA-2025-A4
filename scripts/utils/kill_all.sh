@@ -1,7 +1,7 @@
 #! /bin/bash
 
 #Stop reamaining processes
-# sudo pkill xmem
+sudo pkill xmem
 # /home/hnpark2/ddio/scripts/end_wyatt.sh
 # sudo kill -INT $(pgrep dpdk-rx)
 # sudo kill -INT $(pgrep click)
