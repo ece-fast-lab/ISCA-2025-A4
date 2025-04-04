@@ -6,8 +6,10 @@
 
 ### Setup
 1. Download and install all benchmarks as described in the `README.md` under `app` directory
-2. Download and install all tools as described in the `README.md` under `tools` directory
-3. Navigate to the `client` directory to set up the client machine
+   a. After this step, you should be able to find commands: `fio`, `ffsb`, `xmem`, `xmem_c4`, `xmem_c11`, `xmem_c14`, `click`, `redis-server`, and `dpdk-rx`.
+   b. Some application folders should be located under the `app` directory. **(`YCSB` and `cpu2017`)**
+3. Download and install all tools as described in the `README.md` under `tools` directory
+4. Navigate to the `client` directory to set up the client machine
 
 ### Pre-experiment Setup
 Before starting experiments, after each reboot, and every new terminal:
